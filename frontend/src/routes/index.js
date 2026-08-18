@@ -1,0 +1,18 @@
+export const ROUTES = {
+  LOGIN: '/login',
+  REGISTER: '/register',
+  HOME: '/',
+  PROFILE: (idOrUsername) => `/profile/${idOrUsername}`,
+  FRIENDS: '/friends',
+  FRIEND_REQUESTS: '/friends/requests',
+  MESSAGES: '/messages',
+  NOTIFICATIONS: '/notifications',
+  SEARCH: '/search',
+  GROUPS: '/groups',
+  GROUP_DETAIL: (id) => `/groups/${id}`,
+  MARKETPLACE: '/marketplace',
+  EVENTS: '/events',
+  EVENT_DETAIL: (id) => `/events/${id}`,
+  SAVED: '/saved',
+  SETTINGS: '/settings',
+};

@@ -1,0 +1,163 @@
+# ============================================================
+# ornaConnect (Facebook clone) — .gitignore
+# Root-level rules for the whole monorepo. Unanchored patterns
+# match at any depth (backend/, frontend/, ...). Negations (!)
+# re-include files explicitly meant to be committed.
+# ============================================================
+
+# ------------------------------------------------------------
+# Dependencies
+# ------------------------------------------------------------
+node_modules/
+# Alternative package-manager caches (harmless if unused)
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.bun/
+.pnp.*
+
+# ------------------------------------------------------------
+# Environment variables — NEVER commit real secrets.
+# The `.env.example` files ARE committed (see negations below).
+# ------------------------------------------------------------
+.env
+.env.*
+!.env.example
+!backend/.env.example
+!frontend/.env.example
+
+# ------------------------------------------------------------
+# Build outputs & bundler cache
+# ------------------------------------------------------------
+dist/
+build/
+out/
+.output/
+.cache/
+.vite/
+*.tsbuildinfo
+*.tgz
+*.tar.gz
+
+# ------------------------------------------------------------
+# Test coverage & reports
+# ------------------------------------------------------------
+coverage/
+coverage.*
+.nyc_output/
+*.lcov
+test-results/
+playwright-report/
+allure-results/
+
+# ------------------------------------------------------------
+# Uploaded media (runtime data — never commit user files).
+# Keep only the .gitkeep placeholder.
+# ------------------------------------------------------------
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# ------------------------------------------------------------
+# Logs & runtime output
+# ------------------------------------------------------------
+logs/
+*.log
+*.err.log
+*.out.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+server-err.log
+server-out.log
+server.err.log
+server.log
+fe-err.log
+fe-out.log
+preview.log
+vite.log
+pm2-*.log
+
+# ------------------------------------------------------------
+# OS files
+# ------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ------------------------------------------------------------
+# Editors / IDEs
+# ------------------------------------------------------------
+.vscode/
+.idea/
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+*.vim
+
+# ------------------------------------------------------------
+# Secrets & credentials (defensive — for anything you may add
+# later, e.g. service-account JSONs, private keys, tokens).
+# ------------------------------------------------------------
+*.pem
+*.key
+*.p12
+*.pfx
+*.p8
+*.p8.pub
+*.pub
+credentials.json
+credential.json
+service-account*.json
+service_account*.json
+google-application-credentials*.json
+firebase-adminsdk*.json
+google-services.json
+GoogleService-Info.plist
+*.secret
+secrets.*
+.secrets.*
+id_rsa
+id_dsa
+id_ed25519
+*.npmrc
+.npmrc
+._auth*
+*_authToken*
+*.token
+
+# ------------------------------------------------------------
+# Prisma / SQLite leftovers (only relevant if DATABASE_URL is
+# ever switched to SQLite — the project uses PostgreSQL)
+# ------------------------------------------------------------
+backend/prisma/dev.db
+backend/prisma/*.db
+backend/prisma/*.db-journal
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# ------------------------------------------------------------
+# Miscellaneous
+# ------------------------------------------------------------
+*.pid
+*.seed
+*.pid.lock
+*.orig
+*.rej
+.eslintcache
+.turbo/
+.yarn-integrity

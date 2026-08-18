@@ -1,0 +1,23 @@
+{
+  "name": "facebook-clone",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Complete Facebook-style social networking application",
+  "scripts": {
+    "install:all": "npm --prefix frontend install && npm --prefix backend install",
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix backend run start",
+    "migrate": "npm --prefix backend run prisma:migrate",
+    "migrate:deploy": "npm --prefix backend run migrate:deploy",
+    "seed": "npm --prefix backend run prisma:seed",
+    "lint": "npm --prefix backend run lint",
+    "lint:frontend": "npm --prefix frontend run lint",
+    "test": "npm --prefix backend run test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
