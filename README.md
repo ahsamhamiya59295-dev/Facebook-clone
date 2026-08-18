@@ -1,4 +1,4 @@
-# ornaConnect — Facebook-Style Social Network Clone
+# Facebook-Style Social Network Clone
 
 A complete, full-stack, high-fidelity Facebook-style social networking application. Real authentication, real friends, real-time messaging, notifications, stories, groups, events, marketplace, saved collections, blocking and reporting — all persisted in PostgreSQL.
 
