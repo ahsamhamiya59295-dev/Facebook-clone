@@ -114,7 +114,7 @@ Frontend `.env` (optional — same-origin is the default):
 ```
 VITE_API_URL=/api
 VITE_SOCKET_URL=
-VITE_APP_NAME=ornaConnect
+VITE_APP_NAME=Facebook
 ```
 
 When the backend serves the SPA (single-server deploys) no frontend values are
