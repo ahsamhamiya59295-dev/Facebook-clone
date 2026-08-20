@@ -1,4 +1,4 @@
-# ornaConnect — Facebook-Style Social Network Clone
+# Facebook-Style Social Network Clone
 
 A complete, full-stack, high-fidelity Facebook-style social networking application. Real authentication, real friends, real-time messaging, notifications, stories, groups, events, marketplace, saved collections, blocking and reporting — all persisted in PostgreSQL.
 
@@ -114,7 +114,7 @@ Frontend `.env` (optional — same-origin is the default):
 ```
 VITE_API_URL=/api
 VITE_SOCKET_URL=
-VITE_APP_NAME=ornaConnect
+VITE_APP_NAME=Facebook
 ```
 
 When the backend serves the SPA (single-server deploys) no frontend values are
