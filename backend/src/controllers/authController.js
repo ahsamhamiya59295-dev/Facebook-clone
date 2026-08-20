@@ -19,8 +19,20 @@ import env from '../config/env.js';
 const cookieOptions = {
   httpOnly: true,
   secure: env.nodeEnv === 'production',
-  sameSite: 'lax',
+  // Split-hosting (Netlify frontend + remote API) is cross-site, so a Lax
+  // cookie is never sent on XHR/WebSocket. Use None (still Secure) only in
+  // production; keep Lax in development/same-site.
+  sameSite: env.nodeEnv === 'production' ? 'none' : 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: '/',
+};
+
+// clearCookie must mirror the original attributes (Secure/SameSite/httpOnly)
+// or the browser will refuse to clear a production cookie.
+const clearCookieOptions = {
+  httpOnly: true,
+  secure: env.nodeEnv === 'production',
+  sameSite: env.nodeEnv === 'production' ? 'none' : 'lax',
   path: '/',
 };
 
@@ -69,7 +81,7 @@ export const logout = async (req, res) => {
       // stale/expired token — nothing to revoke
     }
   }
-  res.clearCookie(env.cookieName, { path: '/' });
+  res.clearCookie(env.cookieName, clearCookieOptions);
   res.json({ success: true, message: 'Logged out' });
 };
 

@@ -1,0 +1,11 @@
+[build]
+  command = "npm --prefix frontend install && npm --prefix frontend run build"
+  publish = "frontend/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Set these in the Netlify dashboard (Site settings -> Environment variables):
+#   VITE_API_URL    = https://<your-api-host>/api
+#   VITE_SOCKET_URL = https://<your-api-host>
+# They are baked in at build time, so changing them requires a redeploy.

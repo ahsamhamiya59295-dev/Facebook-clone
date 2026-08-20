@@ -14,7 +14,7 @@ export function csrfProtection(req, res, next) {
       res.cookie(CSRF_COOKIE, token, {
         httpOnly: false,
         secure: res.app?.get('env') === 'production' || process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: (res.app?.get('env') === 'production' || process.env.NODE_ENV === 'production') ? 'none' : 'lax',
         path: '/',
       });
     }
@@ -27,7 +27,7 @@ export function csrfProtection(req, res, next) {
     res.cookie(CSRF_COOKIE, token, {
       httpOnly: false,
       secure: res.app?.get('env') === 'production' || process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: (res.app?.get('env') === 'production' || process.env.NODE_ENV === 'production') ? 'none' : 'lax',
       path: '/',
     });
     req.csrfToken = token;
