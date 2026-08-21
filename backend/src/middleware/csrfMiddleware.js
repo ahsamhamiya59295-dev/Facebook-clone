@@ -2,6 +2,15 @@ import crypto from 'crypto';
 import AppError from '../utils/AppError.js';
 
 const CSRF_COOKIE = 'fb_clone_csrf';
+
+// Current deployment is HTTP, so CSRF cookies must not use Secure.
+const csrfCookieOptions = {
+  httpOnly: false,
+  secure: false,
+  sameSite: 'lax',
+  path: '/',
+};
+
 // Methods that don't require CSRF protection
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
@@ -11,12 +20,7 @@ export function csrfProtection(req, res, next) {
   if (req.path.startsWith('/socket.io')) {
     if (!req.cookies?.[CSRF_COOKIE]) {
       const token = crypto.randomBytes(24).toString('base64url');
-      res.cookie(CSRF_COOKIE, token, {
-        httpOnly: false,
-        secure: res.app?.get('env') === 'production' || process.env.NODE_ENV === 'production',
-        sameSite: (res.app?.get('env') === 'production' || process.env.NODE_ENV === 'production') ? 'none' : 'lax',
-        path: '/',
-      });
+      res.cookie(CSRF_COOKIE, token, csrfCookieOptions);
     }
     return next();
   }
@@ -24,12 +28,7 @@ export function csrfProtection(req, res, next) {
   // Ensure every visitor has a CSRF cookie (double-submit).
   if (!req.cookies?.[CSRF_COOKIE]) {
     const token = crypto.randomBytes(24).toString('base64url');
-    res.cookie(CSRF_COOKIE, token, {
-      httpOnly: false,
-      secure: res.app?.get('env') === 'production' || process.env.NODE_ENV === 'production',
-      sameSite: (res.app?.get('env') === 'production' || process.env.NODE_ENV === 'production') ? 'none' : 'lax',
-      path: '/',
-    });
+    res.cookie(CSRF_COOKIE, token, csrfCookieOptions);
     req.csrfToken = token;
     return next();
   }
