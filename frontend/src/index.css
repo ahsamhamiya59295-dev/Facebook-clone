@@ -1187,8 +1187,8 @@ img {
 .sidebar::-webkit-scrollbar {
   display: none;
 }
-.sidebar.left { display: block; }
-.sidebar.right { display: block; }
+.sidebar-left { display: block; }
+.sidebar-right { display: block; }
 .sidebar-item {
   display: flex;
   align-items: center;
@@ -1233,7 +1233,7 @@ img {
 }
 
 /* ===== Right rail (FB home: Birthdays / Contacts / Suggestions) ===== */
-.sidebar.right {
+.sidebar-right {
   padding-left: 8px;
   padding-right: 8px;
 }
@@ -3649,8 +3649,8 @@ img {
   padding: 8px;
 }
 .drawer-body .sidebar,
-.drawer-body .sidebar.left,
-.drawer-body .sidebar.right {
+.drawer-body .sidebar-left,
+.drawer-body .sidebar-right {
   position: static;
   display: block;
   width: auto;
@@ -3658,7 +3658,7 @@ img {
   padding: 8px 0;
   overflow: visible;
 }
-.drawer-body .sidebar.right {
+.drawer-body .sidebar-right {
   padding: 0 0 8px;
   margin-top: 8px;
   border-top: 8px solid var(--bg);
@@ -4004,10 +4004,10 @@ textarea {
   .topbar-menu-btn {
     display: inline-flex;
   }
-  .sidebar.right {
+  .sidebar-right {
     display: none;
   }
-  .sidebar.left {
+  .sidebar-left {
     display: none;
   }
   .layout-main.with-sidebars {
@@ -4048,7 +4048,7 @@ textarea {
   .topbar-avatar span {
     display: none;
   }
-  .sidebar.left {
+  .sidebar-left {
     display: none;
   }
   .layout-main.with-sidebars {
@@ -4953,6 +4953,7 @@ textarea {
 .profile-footer-dot { opacity: 0.5; }
 
 /* ============== Sidebars ============== */
+/* Base: hidden on mobile (display:none from .sidebar), shown on desktop */
 .sidebar-left,
 .sidebar-right {
   position: sticky;
@@ -4961,12 +4962,17 @@ textarea {
   height: calc(100vh - var(--header-height));
   overflow-y: auto;
   padding: 16px 8px;
-  display: flex;
   flex-direction: column;
   gap: 4px;
 }
+@media (min-width: 831px) {
+  .sidebar-left,
+  .sidebar-right {
+    display: flex;
+  }
+}
 .sidebar-left { width: 280px; }
-.sidebar-right { width: 320px; }
+.sidebar-right { width: 310px; }
 .sidebar-item {
   display: flex;
   align-items: center;

@@ -25,6 +25,8 @@ export const userService = {
     fd.append('file', file);
     return api.patch('/users/me/cover', fd).then((r) => r.data);
   },
+  removeAvatar: () => api.delete('/users/me/avatar').then((r) => r.data),
+  removeCover: () => api.delete('/users/me/cover').then((r) => r.data),
   posts: (id, page = 1) => api.get(`/users/${id}/posts`, { params: { page } }).then((r) => r.data),
   friends: (id) => api.get(`/users/${id}/friends`).then((r) => r.data),
   followers: (id) => api.get(`/users/${id}/followers`).then((r) => r.data),

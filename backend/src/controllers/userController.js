@@ -5,6 +5,8 @@ import {
   updateProfile,
   updateAvatar,
   updateCover,
+  removeAvatar,
+  removeCover,
   getFriendRelation,
   getFriends,
   getFollowers,
@@ -75,6 +77,16 @@ export const uploadCover = asyncHandler(async (req, res) => {
   if (!req.file) throw new AppError('No file uploaded', 400);
   const user = await updateCover(req.user.id, req.file.filename);
   res.json({ success: true, user, coverUrl: `/uploads/${req.file.filename}` });
+});
+
+export const removeAvatarHandler = asyncHandler(async (req, res) => {
+  const user = await removeAvatar(req.user.id);
+  res.json({ success: true, user, avatarUrl: null });
+});
+
+export const removeCoverHandler = asyncHandler(async (req, res) => {
+  const user = await removeCover(req.user.id);
+  res.json({ success: true, user, coverUrl: null });
 });
 
 export const getUserPosts = asyncHandler(async (req, res) => {

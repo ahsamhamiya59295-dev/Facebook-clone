@@ -1,15 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { useToastActions } from '../../context/ToastContext.jsx';
 import { storyService } from '../../services';
 import Icon from '../common/Icon.jsx';
 import UserAvatar from '../common/UserAvatar.jsx';
+import Modal from '../common/Modal.jsx';
 
 export default function StoryViewer({ group, total, onClose, onNext, onPrev }) {
   const { user } = useAuth();
+  const { success, error } = useToastActions();
   const [storyIndex, setStoryIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [viewersOpen, setViewersOpen] = useState(false);
   const [viewers, setViewers] = useState([]);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const rafRef = useRef(null);
   const storyIndexRef = useRef(0);
   const DURATION = 5000;
@@ -67,6 +72,20 @@ export default function StoryViewer({ group, total, onClose, onNext, onPrev }) {
     }
   };
 
+  const deleteStory = async () => {
+    setDeleting(true);
+    try {
+      await storyService.remove(story.id);
+      success('Story deleted');
+      onClose();
+    } catch (err) {
+      error('Failed to delete story');
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
+
   if (!story) return null;
 
   return (
@@ -97,13 +116,20 @@ export default function StoryViewer({ group, total, onClose, onNext, onPrev }) {
         {story.caption && <div className="story-viewer-caption">{story.caption}</div>}
 
         {group.user.id === user.id && (
-          <button
-            className="btn btn-sm btn-secondary"
-            style={{ position: 'absolute', bottom: 16, right: 16, zIndex: 2 }}
-            onClick={loadViewers}
-          >
-            Views ({story.views?.length || 0})
-          </button>
+          <div style={{ position: 'absolute', bottom: 16, right: 16, zIndex: 2, display: 'flex', gap: 8 }}>
+            <button
+              className="btn btn-sm btn-secondary"
+              onClick={loadViewers}
+            >
+              Views ({story.views?.length || 0})
+            </button>
+            <button
+              className="btn btn-sm btn-danger"
+              onClick={() => setConfirmDelete(true)}
+            >
+              <Icon name="delete" size={14} /> Delete
+            </button>
+          </div>
         )}
 
         {viewersOpen && (
@@ -133,6 +159,23 @@ export default function StoryViewer({ group, total, onClose, onNext, onPrev }) {
           </>
         )}
       </div>
+
+      {confirmDelete && (
+        <Modal
+          title="Delete Story"
+          onClose={() => setConfirmDelete(false)}
+          footer={
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn btn-secondary" onClick={() => setConfirmDelete(false)}>Cancel</button>
+              <button className="btn btn-danger" onClick={deleteStory} disabled={deleting}>
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          }
+        >
+          <p>Are you sure you want to delete this story? This action cannot be undone.</p>
+        </Modal>
+      )}
     </div>
   );
 }

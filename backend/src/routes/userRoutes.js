@@ -10,6 +10,8 @@ import {
   updateMe,
   uploadAvatar,
   uploadCover,
+  removeAvatarHandler,
+  removeCoverHandler,
   getUserPosts,
   getFriendsHandler,
   getFollowersHandler,
@@ -47,6 +49,8 @@ router.patch(
 );
 router.patch('/me/avatar', uploadLimiter, uploadSingle('file', 5), cleanupUploads, sniffUploadedFiles, uploadAvatar);
 router.patch('/me/cover', uploadLimiter, uploadSingle('file', 5), cleanupUploads, sniffUploadedFiles, uploadCover);
+router.delete('/me/avatar', removeAvatarHandler);
+router.delete('/me/cover', removeCoverHandler);
 
 router.get('/:id', param('id').isUUID().withMessage('Invalid user id'), validate, getUser);
 router.get('/:id/posts', param('id').isUUID().withMessage('Invalid user id'), validate, getUserPosts);

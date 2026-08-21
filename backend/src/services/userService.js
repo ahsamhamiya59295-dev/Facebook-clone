@@ -182,6 +182,28 @@ export async function updateCover(userId, filename) {
   return updated.user;
 }
 
+export async function removeAvatar(userId) {
+  const current = await prisma.profile.findUnique({ where: { userId } });
+  const updated = await prisma.profile.update({
+    where: { userId },
+    data: { avatarUrl: null },
+    select: { user: { select: userDefaults } },
+  });
+  if (current?.avatarUrl) deleteFile(current.avatarUrl);
+  return updated.user;
+}
+
+export async function removeCover(userId) {
+  const current = await prisma.profile.findUnique({ where: { userId } });
+  const updated = await prisma.profile.update({
+    where: { userId },
+    data: { coverUrl: null },
+    select: { user: { select: userDefaults } },
+  });
+  if (current?.coverUrl) deleteFile(current.coverUrl);
+  return updated.user;
+}
+
 export async function getFriendRelation(currentUserId, targetUserId) {
   if (currentUserId === targetUserId) return 'SELF';
 

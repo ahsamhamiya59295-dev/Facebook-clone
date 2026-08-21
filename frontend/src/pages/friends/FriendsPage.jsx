@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { userService, friendService } from '../../services';
 import { useToastActions } from '../../context/ToastContext.jsx';
 import Icon from '../../components/common/Icon.jsx';
@@ -18,15 +19,16 @@ function Photo({ user, className = '' }) {
 }
 
 function RequestCard({ request, confirmed, onConfirm, onDelete, onOpen }) {
+  const sender = request.sender;
   const time = request.createdAt ? timeAgo(request.createdAt) : null;
   return (
     <div className="pyo-card">
-      <button type="button" className="pyo-photo" onClick={onOpen} aria-label={request.fullName}>
-        <Photo user={request} className="pyo-photo-img" />
+      <button type="button" className="pyo-photo" onClick={onOpen} aria-label={sender.fullName}>
+        <Photo user={sender} className="pyo-photo-img" />
         {time && <span className="pyo-time-badge">{time}</span>}
       </button>
       <div className="pyo-body">
-        <h3 className="pyo-name" onClick={onOpen}>{request.fullName}</h3>
+        <h3 className="pyo-name" onClick={onOpen}>{sender.fullName}</h3>
         <p className="pyo-mutual">{request.mutualCount || 0} mutual friends</p>
         <div className="pyo-actions">
           {confirmed ? (
@@ -81,10 +83,10 @@ function SuggestionCard({ suggestion, added, onAdd, onRemove, onOpen }) {
 
 export default function FriendsPage() {
   const { success, error } = useToastActions();
+  const { loadFriends } = useAuth();
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
-  const [confirmedIds, setConfirmedIds] = useState([]);
   const [addedIds, setAddedIds] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -107,20 +109,21 @@ export default function FriendsPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const acceptRequest = async (id) => {
+  const acceptRequest = async (senderId) => {
     try {
-      await friendService.accept(id);
-      setConfirmedIds((prev) => [...prev, id]);
+      await friendService.accept(senderId);
+      setRequests((prev) => prev.filter((x) => x.sender.id !== senderId));
       success('Friend request accepted');
+      loadFriends();
     } catch (err) {
       error(err.message || 'Could not accept request');
     }
   };
 
-  const rejectRequest = async (id) => {
+  const rejectRequest = async (senderId) => {
     try {
-      await friendService.reject(id);
-      setRequests((prev) => prev.filter((x) => x.id !== id));
+      await friendService.reject(senderId);
+      setRequests((prev) => prev.filter((x) => x.sender.id !== senderId));
     } catch (err) {
       error(err.message || 'Could not delete request');
     }
@@ -147,7 +150,7 @@ export default function FriendsPage() {
               Friend Requests
               {requests.length > 0 && (
                 <span className="pyo-count-badge">
-                  {requests.filter((r) => !confirmedIds.includes(r.id)).length}
+                  {requests.length}
                 </span>
               )}
             </h1>
@@ -168,10 +171,10 @@ export default function FriendsPage() {
               <RequestCard
                 key={r.id}
                 request={r}
-                confirmed={confirmedIds.includes(r.id)}
-                onConfirm={() => acceptRequest(r.id)}
-                onDelete={() => rejectRequest(r.id)}
-                onOpen={openProfile(r)}
+                confirmed={false}
+                onConfirm={() => acceptRequest(r.sender.id)}
+                onDelete={() => rejectRequest(r.sender.id)}
+                onOpen={openProfile(r.sender)}
               />
             ))}
           </div>

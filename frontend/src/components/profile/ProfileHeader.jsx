@@ -93,6 +93,8 @@ export default function ProfileHeader({ profile, isOwner, relation, following, o
   const navigate = useNavigate();
   const [editOpen, setEditOpen] = useState(false);
   const [savingImg, setSavingImg] = useState(null);
+  const [confirmRemoveAvatar, setConfirmRemoveAvatar] = useState(false);
+  const [confirmRemoveCover, setConfirmRemoveCover] = useState(false);
   const avatarInput = useRef(null);
   const coverInput = useRef(null);
 
@@ -126,6 +128,36 @@ export default function ProfileHeader({ profile, isOwner, relation, following, o
     }
   };
 
+  const removeAvatar = async () => {
+    setSavingImg('avatar');
+    try {
+      await userService.removeAvatar();
+      updateUser({ avatarUrl: null });
+      onProfileChanged?.();
+      success('Profile picture removed');
+    } catch (err) {
+      error(apiError(err));
+    } finally {
+      setSavingImg(null);
+      setConfirmRemoveAvatar(false);
+    }
+  };
+
+  const removeCover = async () => {
+    setSavingImg('cover');
+    try {
+      await userService.removeCover();
+      updateUser({ coverUrl: null });
+      onProfileChanged?.();
+      success('Cover photo removed');
+    } catch (err) {
+      error(apiError(err));
+    } finally {
+      setSavingImg(null);
+      setConfirmRemoveCover(false);
+    }
+  };
+
   const message = async () => {
     try {
       const data = await messageService.create(profile.id);
@@ -144,6 +176,11 @@ export default function ProfileHeader({ profile, isOwner, relation, following, o
             <button className="btn btn-sm" style={{ background: 'rgba(255,255,255,0.95)' }} onClick={() => coverInput.current?.click()} disabled={savingImg === 'cover'}>
               <Icon name="camera" size={16} /> {savingImg === 'cover' ? 'Uploading...' : 'Edit cover photo'}
             </button>
+            {profile.coverUrl && (
+              <button className="btn btn-sm" style={{ background: 'rgba(255,255,255,0.95)' }} onClick={() => setConfirmRemoveCover(true)} disabled={savingImg === 'cover'}>
+                <Icon name="delete" size={16} /> Remove
+              </button>
+            )}
             <input ref={coverInput} type="file" accept="image/*" hidden onChange={(e) => uploadCover(e.target.files[0])} />
           </div>
         )}
@@ -161,6 +198,17 @@ export default function ProfileHeader({ profile, isOwner, relation, following, o
               <UserAvatar user={profile} size="xl" />
               {isOwner && <span className="profile-avatar-camera"><Icon name="camera" size={18} /></span>}
             </button>
+            {isOwner && profile.avatarUrl && (
+              <button
+                className="btn btn-icon"
+                style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                onClick={(e) => { e.stopPropagation(); setConfirmRemoveAvatar(true); }}
+                disabled={savingImg === 'avatar'}
+                aria-label="Remove profile picture"
+              >
+                <Icon name="close" size={14} />
+              </button>
+            )}
             {isOwner && <input ref={avatarInput} type="file" accept="image/*" hidden onChange={(e) => uploadAvatar(e.target.files[0])} />}
           </div>
 
@@ -205,6 +253,40 @@ export default function ProfileHeader({ profile, isOwner, relation, following, o
       </div>
 
       {editOpen && <EditProfileModal user={profile} onSaved={onProfileChanged} onClose={() => setEditOpen(false)} />}
+
+      {confirmRemoveAvatar && (
+        <Modal
+          title="Remove Profile Picture"
+          onClose={() => setConfirmRemoveAvatar(false)}
+          footer={
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn btn-secondary" onClick={() => setConfirmRemoveAvatar(false)}>Cancel</button>
+              <button className="btn btn-danger" onClick={removeAvatar} disabled={savingImg === 'avatar'}>
+                {savingImg === 'avatar' ? 'Removing...' : 'Remove'}
+              </button>
+            </div>
+          }
+        >
+          <p>Are you sure you want to remove your profile picture?</p>
+        </Modal>
+      )}
+
+      {confirmRemoveCover && (
+        <Modal
+          title="Remove Cover Photo"
+          onClose={() => setConfirmRemoveCover(false)}
+          footer={
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn btn-secondary" onClick={() => setConfirmRemoveCover(false)}>Cancel</button>
+              <button className="btn btn-danger" onClick={removeCover} disabled={savingImg === 'cover'}>
+                {savingImg === 'cover' ? 'Removing...' : 'Remove'}
+              </button>
+            </div>
+          }
+        >
+          <p>Are you sure you want to remove your cover photo?</p>
+        </Modal>
+      )}
     </div>
   );
 }
