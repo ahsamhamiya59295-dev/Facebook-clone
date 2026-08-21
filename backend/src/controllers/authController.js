@@ -16,13 +16,12 @@ import {
 } from '../services/authService.js';
 import env from '../config/env.js';
 
+const isHttps = env.clientUrl?.startsWith('https://') === true;
+
 const cookieOptions = {
   httpOnly: true,
-  secure: env.nodeEnv === 'production',
-  // Split-hosting (Netlify frontend + remote API) is cross-site, so a Lax
-  // cookie is never sent on XHR/WebSocket. Use None (still Secure) only in
-  // production; keep Lax in development/same-site.
-  sameSite: env.nodeEnv === 'production' ? 'none' : 'lax',
+  secure: isHttps,
+  sameSite: isHttps ? 'none' : 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000,
   path: '/',
 };
@@ -31,8 +30,8 @@ const cookieOptions = {
 // or the browser will refuse to clear a production cookie.
 const clearCookieOptions = {
   httpOnly: true,
-  secure: env.nodeEnv === 'production',
-  sameSite: env.nodeEnv === 'production' ? 'none' : 'lax',
+  secure: isHttps,
+  sameSite: isHttps ? 'none' : 'lax',
   path: '/',
 };
 
