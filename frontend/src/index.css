@@ -1464,111 +1464,393 @@ img {
 .story-create-change:hover {
   background: rgba(0, 0, 0, 0.75);
 }
-.story-progress-bar {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  right: 8px;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.35);
-  border-radius: 2px;
-  overflow: hidden;
-  z-index: 2;
-}
-.story-progress-fill {
-  height: 100%;
-  background: #fff;
-  border-radius: 2px;
-  transform-origin: left center;
-  will-change: transform;
-}
+/* ===== Story Viewer — Facebook-style full-screen ===== */
 
-/* Story viewer */
-.story-viewer-backdrop {
+/* --- Backdrop --- */
+.sv-backdrop {
   position: fixed;
   inset: 0;
-  background: #000;
   z-index: 500;
+  background: #0a0a0a;
   display: flex;
   align-items: center;
   justify-content: center;
   animation: fadeIn 0.2s ease;
 }
-.story-viewer {
-  width: 100%;
-  max-width: 500px;
-  height: 100%;
+
+/* Blurred background using current story media */
+.sv-bg {
+  position: absolute;
+  inset: -40px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(40px) brightness(0.35);
+  z-index: 0;
+}
+
+/* --- Main layout --- */
+.sv-container {
   position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.story-viewer .story-media {
+
+/* Center column: story card + bottom bar */
+.sv-story-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  max-height: 100vh;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+}
+
+/* Story card — the main viewing area */
+.sv-story-card {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Media fills the card */
+.sv-media {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
 }
-.story-viewer-header {
+
+/* --- Progress bars (segmented, top of card) --- */
+.sv-progress-track {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  gap: 4px;
+  z-index: 5;
+}
+
+.sv-progress-segment {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sv-progress-bg {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 2px;
+}
+
+.sv-progress-fill {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  border-radius: 2px;
+  transform-origin: left center;
+  will-change: transform;
+  transition: transform 60ms linear;
+}
+
+/* --- Header overlay --- */
+.sv-header {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  padding: 16px 44px 16px 16px;
+  padding: 20px 12px 40px 12px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: #fff;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent);
-  z-index: 2;
+  justify-content: space-between;
+  background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+  z-index: 5;
 }
-.story-viewer-header .name {
+
+.sv-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sv-header-name {
+  color: #fff;
   font-weight: 700;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.story-viewer-nav {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 50px;
+
+.sv-header-time {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.sv-header-right {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Icon buttons in header */
+.sv-icon-btn {
+  background: none;
+  border: none;
   color: #fff;
-  opacity: 0.8;
-  transition: opacity 0.2s, transform 0.2s;
-  z-index: 2;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 50%;
+  transition: background 0.15s;
 }
-.story-viewer-nav svg {
-  width: 36px;
-  height: 36px;
+
+.sv-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
-.story-viewer-nav:hover {
-  opacity: 1;
-  transform: scale(1.1);
+
+.sv-view-count {
+  font-size: 13px;
+  font-weight: 600;
 }
-.story-viewer-nav.prev { left: 0; }
-.story-viewer-nav.next { right: 0; }
-.story-viewer-close {
+
+/* --- Caption --- */
+.sv-caption {
   position: absolute;
-  top: 12px;
+  bottom: 8px;
+  left: 12px;
   right: 12px;
   color: #fff;
-  z-index: 3;
-  width: 36px;
-  height: 36px;
+  font-size: 14px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+  z-index: 5;
+  line-height: 1.4;
+}
+
+/* --- Owner delete button (small, bottom-right of card) --- */
+.sv-owner-actions {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  z-index: 6;
+}
+
+.sv-delete-btn {
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+  backdrop-filter: blur(4px);
 }
-.story-viewer-caption {
+
+.sv-delete-btn:hover {
+  background: rgba(250, 62, 62, 0.8);
+}
+
+/* --- Viewers panel (overlay inside card) --- */
+.sv-viewers-panel {
   position: absolute;
-  bottom: 20px;
-  left: 16px;
-  right: 16px;
+  bottom: 60px;
+  right: 10px;
+  width: 260px;
+  max-height: 280px;
+  background: rgba(24, 25, 26, 0.95);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 10;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sv-viewers-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 700;
   color: #fff;
-  font-size: 15px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  z-index: 2;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sv-viewers-list {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.sv-viewers-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sv-viewers-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.sv-viewer-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  color: #fff;
+  font-size: 13px;
+}
+
+.sv-viewers-empty {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  text-align: center;
+  padding: 16px 12px;
+}
+
+/* --- Bottom bar (reply + reactions) --- */
+.sv-bottom-bar {
+  width: 100%;
+  flex-shrink: 0;
+  padding: 8px 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sv-reply-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: border-color 0.15s;
+}
+
+.sv-reply-row:focus-within {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.sv-reply-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  min-width: 0;
+}
+
+.sv-reply-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.sv-send-btn {
+  background: var(--fb-blue);
+  border: none;
+  color: #fff;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.sv-send-btn:hover {
+  background: var(--fb-blue-hover);
+  transform: scale(1.05);
+}
+
+.sv-reaction-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.sv-react-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, transform 0.15s;
+}
+
+.sv-react-btn:hover {
+  color: #fff;
+  transform: scale(1.15);
+}
+
+/* --- Navigation arrows --- */
+.sv-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.sv-nav:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.sv-nav-prev {
+  left: max(12px, calc(50% - 260px));
+}
+
+.sv-nav-next {
+  right: max(12px, calc(50% - 260px));
 }
 
 /* ===== Post Composer ===== */
@@ -3778,8 +4060,8 @@ img {
 .reaction-picker,
 .react-popover,
 .dropdown-menu,
-.story-viewer-backdrop,
-.story-viewer,
+.sv-backdrop,
+.sv-story-card,
 .toast {
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -3789,7 +4071,7 @@ img {
 .modal,
 .reaction-picker,
 .dropdown-menu,
-.story-viewer {
+.sv-story-card {
   will-change: transform;
 }
 /* Self-contained media blocks: isolate layout/paint so a media element can
@@ -3942,7 +4224,7 @@ video {
 .dropdown-menu,
 .notif-menu,
 .messenger-dropdown,
-.story-viewer,
+.sv-backdrop,
 .sidebar-drawer {
   overscroll-behavior: contain;
 }
@@ -6205,4 +6487,84 @@ textarea {
   top: auto;
   height: auto;
   padding: 12px 8px 28px;
+}
+
+/* ===== Story Viewer — Responsive ===== */
+
+/* Tablets and smaller desktops */
+@media (max-width: 768px) {
+  .sv-story-column {
+    max-width: 100%;
+    border-radius: 0;
+  }
+  .sv-story-card {
+    border-radius: 0;
+  }
+  .sv-nav {
+    width: 40px;
+    height: 40px;
+  }
+  .sv-nav-prev {
+    left: 8px;
+  }
+  .sv-nav-next {
+    right: 8px;
+  }
+}
+
+/* Phones: story fills the entire viewport */
+@media (max-width: 480px) {
+  .sv-backdrop {
+    background: #000;
+  }
+  .sv-bg {
+    inset: -20px;
+    filter: blur(30px) brightness(0.3);
+  }
+  .sv-story-column {
+    max-width: 100%;
+    padding: 0;
+  }
+  .sv-story-card {
+    border-radius: 0;
+    width: 100%;
+    height: 100%;
+    flex: 1;
+  }
+  .sv-media {
+    object-fit: contain;
+  }
+  .sv-header {
+    padding: 14px 10px 30px;
+  }
+  .sv-header-name {
+    font-size: 14px;
+  }
+  .sv-progress-track {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+  }
+  .sv-bottom-bar {
+    padding: 6px 10px 16px;
+  }
+  .sv-reply-row {
+    padding: 5px 10px;
+  }
+  .sv-nav {
+    width: 36px;
+    height: 36px;
+    opacity: 0.7;
+  }
+  .sv-nav-prev {
+    left: 4px;
+  }
+  .sv-nav-next {
+    right: 4px;
+  }
+  .sv-viewers-panel {
+    right: 8px;
+    width: 230px;
+    bottom: 50px;
+  }
 }
