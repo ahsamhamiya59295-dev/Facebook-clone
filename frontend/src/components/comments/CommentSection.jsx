@@ -57,15 +57,23 @@ function CommentRow({ comment, post, onDeleted, onReply }) {
     }
   };
 
-  const loadReplies = useCallback(async () => {
+  const toggleReplies = useCallback(async () => {
+    if (repliesOpen) {
+      setRepliesOpen(false);
+      return;
+    }
+    if (replies.length > 0) {
+      setRepliesOpen(true);
+      return;
+    }
     try {
       const data = await postService.replies(comment.id);
-      setReplies((prev) => [...prev, ...data.replies]);
+      setReplies(data.replies);
       setRepliesOpen(true);
     } catch (err) {
       // ignore
     }
-  }, [comment.id]);
+  }, [comment.id, repliesOpen, replies.length]);
 
   return (
     <div className="comment-item" style={{ flexDirection: 'column' }}>
@@ -103,7 +111,7 @@ function CommentRow({ comment, post, onDeleted, onReply }) {
             {count > 0 && <span>{count}</span>}
             <button onClick={() => onReply?.(comment)}>Reply</button>
             {comment._count?.replies > 0 && (
-              <button onClick={loadReplies}>{comment._count.replies} replies</button>
+              <button onClick={toggleReplies}>{comment._count.replies} replies</button>
             )}
             {(isMine || isAuthor) && (
               <button onClick={() => setConfirmDelete(true)}>Delete</button>

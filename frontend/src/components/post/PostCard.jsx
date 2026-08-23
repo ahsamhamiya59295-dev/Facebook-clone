@@ -188,7 +188,9 @@ function PostCard({ post: initialPost, onPostUpdate, onPostDelete }) {
   return (
     <article className="post-card" aria-label="Post">
       <div className="post-head">
-        <UserAvatar user={post.author} size="md" />
+        <Link to={`/profile/${post.author.username}`}>
+          <UserAvatar user={post.author} size="md" />
+        </Link>
         <div className="flex-grow" style={{ marginLeft: 0 }}>
           <Link to={`/profile/${post.author.username}`} className="post-author-name">
             {post.author.fullName}
