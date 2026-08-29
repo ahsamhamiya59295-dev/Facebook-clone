@@ -146,6 +146,13 @@ export function registerSocket(io) {
     });
 
     socket.on('disconnect', () => {
+      // Clean up live rooms
+      for (const room of socket.rooms) {
+        if (room.startsWith('live:')) {
+          socket.leave(room);
+        }
+      }
+
       const set = connectedUsers.get(key);
       if (set) {
         set.delete(socket.id);
@@ -153,6 +160,133 @@ export function registerSocket(io) {
           connectedUsers.delete(key);
           socket.broadcast.emit('user:offline', { userId });
         }
+      }
+    });
+
+    // ===== LIVE STREAMING EVENTS =====
+
+    socket.on('live:join', async (data) => {
+      try {
+        if (hitLimit()) return;
+        const { liveId } = data || {};
+        if (!liveId || typeof liveId !== 'string') return;
+
+        const live = await prisma.liveStream.findUnique({ where: { id: liveId } });
+        if (!live || live.status !== 'LIVE') return;
+
+        const banned = await prisma.liveBan.findUnique({
+          where: { liveStreamId_userId: { liveStreamId: liveId, userId } },
+        });
+        if (banned) return socket.emit('live:error', { error: 'You are banned from this live stream' });
+
+        socket.join(`live:${liveId}`);
+        socket.liveRoom = liveId;
+
+        io.to(`live:${liveId}`).emit('live:viewer-joined', {
+          userId,
+          viewerCount: await prisma.liveViewer.count({ where: { liveStreamId: liveId, isLive: true } }),
+        });
+      } catch {
+        socket.emit('live:error', { error: 'Failed to join live stream' });
+      }
+    });
+
+    socket.on('live:leave', async (data) => {
+      try {
+        const { liveId } = data || {};
+        if (!liveId) return;
+        socket.leave(`live:${liveId}`);
+        socket.liveRoom = null;
+      } catch {
+        // silent
+      }
+    });
+
+    socket.on('live:comment', async (data) => {
+      try {
+        if (hitLimit()) return;
+        const { liveId, content } = data || {};
+        if (!liveId || typeof content !== 'string' || !content.trim()) return;
+
+        const live = await prisma.liveStream.findUnique({ where: { id: liveId } });
+        if (!live || live.status !== 'LIVE') return;
+
+        const banned = await prisma.liveBan.findUnique({
+          where: { liveStreamId_userId: { liveStreamId: liveId, userId } },
+        });
+        if (banned) return socket.emit('live:error', { error: 'You are banned from this live stream' });
+
+        const trimmed = content.trim().slice(0, 500);
+        const comment = await prisma.liveComment.create({
+          data: { liveStreamId: liveId, userId, content: trimmed },
+          include: { user: { select: { id: true, username: true, fullName: true, profile: { select: { avatarUrl: true } } } } },
+        });
+
+        await prisma.liveStream.update({
+          where: { id: liveId },
+          data: { totalComments: { increment: 1 } },
+        });
+
+        io.to(`live:${liveId}`).emit('live:new-comment', { comment });
+      } catch {
+        socket.emit('live:error', { error: 'Failed to send comment' });
+      }
+    });
+
+    socket.on('live:reaction', async (data) => {
+      try {
+        if (hitLimit()) return;
+        const { liveId, emoji } = data || {};
+        if (!liveId || typeof emoji !== 'string') return;
+
+        const validEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡'];
+        if (!validEmojis.includes(emoji)) return;
+
+        io.to(`live:${liveId}`).emit('live:new-reaction', { userId, emoji });
+      } catch {
+        // silent
+      }
+    });
+
+    socket.on('live:signal', async (data) => {
+      try {
+        if (hitLimit()) return;
+        const { liveId, targetUserId, type, payload } = data || {};
+        if (!liveId || !targetUserId || !type || !payload) return;
+
+        const live = await prisma.liveStream.findUnique({ where: { id: liveId } });
+        if (!live) return;
+
+        io.to(`user:${targetUserId}`).emit('live:signal', {
+          liveId,
+          fromUserId: userId,
+          type,
+          payload,
+        });
+      } catch {
+        // silent
+      }
+    });
+
+    socket.on('live:broadcast-end', async (data) => {
+      try {
+        const { liveId } = data || {};
+        if (!liveId) return;
+
+        const live = await prisma.liveStream.findUnique({ where: { id: liveId } });
+        if (!live || live.ownerId !== userId) return;
+
+        const now = new Date();
+        const duration = live.startedAt ? Math.floor((now - live.startedAt) / 1000) : 0;
+
+        await prisma.liveStream.update({
+          where: { id: liveId },
+          data: { status: 'ENDED', endedAt: now, duration, currentViewerCount: 0 },
+        });
+
+        io.to(`live:${liveId}`).emit('live:ended', { liveId, duration });
+      } catch {
+        // silent
       }
     });
   });

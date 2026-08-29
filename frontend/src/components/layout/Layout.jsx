@@ -14,6 +14,8 @@ const FULL_LAYOUT = [
   /^\/friends(\/.*)?$/,
   /^\/events(\/.*)?$/,
   /^\/profile(\/.*)?$/,
+  /^\/messages(\/.*)?$/,
+  /^\/live(\/.*)?$/,
 ];
 
 export default function Layout() {

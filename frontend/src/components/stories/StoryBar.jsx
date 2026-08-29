@@ -1,4 +1,5 @@
 import { useState, memo } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import Icon from '../common/Icon.jsx';
 import UserAvatar from '../common/UserAvatar.jsx';
@@ -13,15 +14,16 @@ function StoryBar({ stories, onRefresh }) {
 
   if (viewerIndex !== null && stories.length > 0) {
     const group = stories[viewerIndex];
-    return (
+    return createPortal(
       <StoryViewer
         group={group}
         total={stories.length}
         index={viewerIndex}
         onClose={() => setViewerIndex(null)}
-        onNext={() => setViewerIndex((i) => (i + 1 < stories.length ? i + 1 : i))}
-        onPrev={() => setViewerIndex((i) => (i > 0 ? i - 1 : i))}
-      />
+        onNext={() => setViewerIndex((i) => (i + 1 < stories.length ? i + 1 : null))}
+        onPrev={() => setViewerIndex((i) => (i > 0 ? i - 1 : null))}
+      />,
+      document.body
     );
   }
 

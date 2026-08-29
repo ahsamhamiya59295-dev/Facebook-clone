@@ -29,6 +29,7 @@ import safetyRoutes from './routes/safetyRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import videoRoutes from './routes/videoRoutes.js';
 import streamRoutes from './routes/streamRoutes.js';
+import liveRoutes from './routes/liveRoutes.js';
 
 const app = express();
 
@@ -143,6 +144,7 @@ app.use('/api/safety', safetyRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/streams', streamRoutes);
+app.use('/api', liveRoutes);
 
 // Production single-server mode: if the frontend has been built
 // (frontend/dist), serve it from Express and fall back to index.html for SPA

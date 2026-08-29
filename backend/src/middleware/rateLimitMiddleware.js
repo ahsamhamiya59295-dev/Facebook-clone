@@ -48,3 +48,27 @@ export const postLimiter = rateLimit({
   legacyHeaders: false,
   message: { success: false, message: 'Too many posts, please slow down' },
 });
+
+export const liveLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many live actions, please slow down' },
+});
+
+export const liveCommentLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many comments, please slow down' },
+});
+
+export const liveReportLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many reports, please slow down' },
+});

@@ -159,7 +159,7 @@ export default function StoryViewer({ group, total, onClose, onNext, onPrev }) {
   if (!story) return null;
 
   return (
-    <div className="sv-backdrop" role="dialog" aria-modal="true">
+    <div className="sv-backdrop" role="dialog" aria-modal="true" style={{ '--sv-bg': `url(${story.url})` }}>
       {showToast && (
         <div className="sv-toast">
           <span>&#10003;</span> {showToast}

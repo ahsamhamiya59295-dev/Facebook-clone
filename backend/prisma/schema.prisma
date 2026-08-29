@@ -60,6 +60,12 @@ model User {
   friendshipsTwo      Friendship[]     @relation("FriendshipUserTwo")
   sharedPosts         PostShare[]      @relation("PostShareAuthor")
   searchHistory       SearchHistory[]
+  liveStreams          LiveStream[]
+  liveComments        LiveComment[]
+  liveViewerSessions  LiveViewer[]
+  liveBans            LiveBan[]         @relation("LiveBanUser")
+  liveBansIssued      LiveBan[]         @relation("LiveBanIssuer")
+  liveReports         LiveReport[]
 
   @@index([username])
   @@index([email])
@@ -677,4 +683,109 @@ enum ReportTargetType {
   GROUP
   MESSAGE
   MARKETPLACE
+  LIVE_STREAM
+  LIVE_COMMENT
+}
+
+// ============ LIVE STREAMING ============
+
+enum LiveStatus {
+  CREATED
+  STARTING
+  LIVE
+  ENDING
+  ENDED
+  FAILED
+}
+
+model LiveStream {
+  id                  String      @id @default(uuid()) @db.Uuid
+  ownerId             String      @db.Uuid
+  title               String      @default("")
+  description         String      @default("")
+  visibility          PrivacyLevel @default(PUBLIC)
+  status              LiveStatus  @default(CREATED)
+  roomCode            String      @unique
+  startedAt           DateTime?
+  endedAt             DateTime?
+  duration            Int         @default(0)
+  currentViewerCount  Int         @default(0)
+  peakViewerCount     Int         @default(0)
+  totalComments       Int         @default(0)
+  isRecording         Boolean     @default(false)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  owner               User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  comments            LiveComment[]
+  viewers             LiveViewer[]
+  bans                LiveBan[]
+  reports             LiveReport[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([roomCode])
+  @@index([createdAt])
+}
+
+model LiveComment {
+  id            String      @id @default(uuid()) @db.Uuid
+  liveStreamId  String      @db.Uuid
+  userId        String      @db.Uuid
+  content       String
+  isHidden      Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+
+  liveStream    LiveStream  @relation(fields: [liveStreamId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([liveStreamId, createdAt])
+  @@index([userId])
+}
+
+model LiveViewer {
+  id            String      @id @default(uuid()) @db.Uuid
+  liveStreamId  String      @db.Uuid
+  userId        String      @db.Uuid
+  joinedAt      DateTime    @default(now())
+  leftAt        DateTime?
+  isLive        Boolean     @default(true)
+
+  liveStream    LiveStream  @relation(fields: [liveStreamId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([liveStreamId, userId])
+  @@index([liveStreamId])
+  @@index([userId])
+}
+
+model LiveBan {
+  id            String      @id @default(uuid()) @db.Uuid
+  liveStreamId  String      @db.Uuid
+  userId        String      @db.Uuid
+  bannedById    String      @db.Uuid
+  reason        String?
+  createdAt     DateTime    @default(now())
+
+  liveStream    LiveStream  @relation(fields: [liveStreamId], references: [id], onDelete: Cascade)
+  user          User        @relation("LiveBanUser", fields: [userId], references: [id], onDelete: Cascade)
+  bannedBy      User        @relation("LiveBanIssuer", fields: [bannedById], references: [id], onDelete: Cascade)
+
+  @@unique([liveStreamId, userId])
+  @@index([liveStreamId])
+}
+
+model LiveReport {
+  id            String      @id @default(uuid()) @db.Uuid
+  liveStreamId  String      @db.Uuid
+  reporterId    String      @db.Uuid
+  reason        String
+  resolved      Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+
+  liveStream    LiveStream  @relation(fields: [liveStreamId], references: [id], onDelete: Cascade)
+  reporter      User        @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([liveStreamId])
+  @@index([reporterId])
 }

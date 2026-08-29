@@ -10,8 +10,7 @@ const HomePage = lazy(() => import('./pages/home/HomePage.jsx'));
 const ProfilePage = lazy(() => import('./pages/profile/ProfilePage.jsx'));
 const FriendsPage = lazy(() => import('./pages/friends/FriendsPage.jsx'));
 const FriendRequestsPage = lazy(() => import('./pages/friends/FriendRequestsPage.jsx'));
-const MessagesPage = lazy(() => import('./pages/messages/MessagesPage.jsx'));
-const ConversationPage = lazy(() => import('./pages/messages/ConversationPage.jsx'));
+const MessengerPage = lazy(() => import('./pages/messages/MessengerPage.jsx'));
 const NotificationsPage = lazy(() => import('./pages/notifications/NotificationsPage.jsx'));
 const SearchPage = lazy(() => import('./pages/search/SearchPage.jsx'));
 const GroupsPage = lazy(() => import('./pages/groups/GroupsPage.jsx'));
@@ -27,6 +26,7 @@ const SettingsPage = lazy(() => import('./pages/settings/SettingsPage.jsx'));
 const AdminPage = lazy(() => import('./pages/admin/AdminPage.jsx'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx'));
 const PostDetailPage = lazy(() => import('./pages/PostDetailPage.jsx'));
+const LiveStreamPage = lazy(() => import('./pages/live/LiveStreamPage.jsx'));
 
 function PageLoader() {
   return (
@@ -54,8 +54,8 @@ export default function App() {
             <Route path="/profile/:username" element={<ProfilePage />} />
             <Route path="/friends" element={<FriendsPage />} />
             <Route path="/friends/requests" element={<FriendRequestsPage />} />
-            <Route path="/messages" element={<MessagesPage />} />
-            <Route path="/messages/:conversationId" element={<ConversationPage />} />
+            <Route path="/messages" element={<MessengerPage />} />
+            <Route path="/messages/:conversationId" element={<MessengerPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/groups" element={<GroupsPage />} />
@@ -69,6 +69,8 @@ export default function App() {
             <Route path="/saved" element={<SavedPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/live" element={<LiveStreamPage />} />
+            <Route path="/live/:id" element={<LiveStreamPage />} />
           </Route>
         </Route>
 

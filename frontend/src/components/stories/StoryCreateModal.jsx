@@ -1,11 +1,15 @@
 import { useState, useRef, useEffect, memo } from 'react';
-import Modal from '../common/Modal.jsx';
 import Icon from '../common/Icon.jsx';
 import UserAvatar from '../common/UserAvatar.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToastActions } from '../../context/ToastContext.jsx';
 import { storyService } from '../../services';
 import { fileToUrl } from '../../utils/format.js';
+
+const PRIVACY = [
+  { value: 'PUBLIC', label: 'Public', icon: 'globe' },
+  { value: 'FRIENDS', label: 'Friends', icon: 'friends' },
+];
 
 export default memo(function StoryCreateModal({ onClose, onCreated }) {
   const { user } = useAuth();
@@ -14,12 +18,13 @@ export default memo(function StoryCreateModal({ onClose, onCreated }) {
   const [preview, setPreview] = useState('');
   const [isVideo, setIsVideo] = useState(false);
   const [caption, setCaption] = useState('');
+  const [privacy, setPrivacy] = useState('PUBLIC');
+  const [showPrivacy, setShowPrivacy] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef(null);
   const previewRef = useRef('');
+  const textareaRef = useRef(null);
 
-  // Revoke the previous object URL whenever a new file is picked and when the
-  // modal unmounts so blob URLs never leak.
   useEffect(() => {
     return () => {
       if (previewRef.current) {
@@ -28,6 +33,14 @@ export default memo(function StoryCreateModal({ onClose, onCreated }) {
       }
     };
   }, []);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose?.();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   const pickFile = (e) => {
     const f = e.target.files?.[0];
@@ -59,52 +72,108 @@ export default memo(function StoryCreateModal({ onClose, onCreated }) {
     }
   };
 
+  const currentPrivacy = PRIVACY.find((p) => p.value === privacy);
+
   return (
-    <Modal
-      title="Create story"
-      onClose={onClose}
-      maxWidth={520}
-      footer={
-        <button className="btn btn-primary btn-block" onClick={submit} disabled={submitting || !file}>
-          {submitting ? 'Sharing...' : 'Share to Story'}
-        </button>
-      }
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-        <UserAvatar user={user} size="lg" />
-        <div>
-          <div className="text-bold">{user.fullName}</div>
-          <span className="text-muted text-sm">Your story</span>
+    <div className="scm-backdrop" onClick={onClose}>
+      <div className="scm-modal" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="scm-header">
+          <button className="scm-close" onClick={onClose} aria-label="Close">
+            <Icon name="close" size={22} />
+          </button>
+          <span className="scm-title">Create story</span>
+          <div style={{ width: 40 }} />
+        </div>
+
+        {/* Body */}
+        <div className="scm-body">
+          {/* User info */}
+          <div className="scm-user-row">
+            <UserAvatar user={user} size="md" />
+            <div className="scm-user-info">
+              <span className="scm-user-name">{user.fullName}</span>
+              <button className="scm-privacy-btn" onClick={() => setShowPrivacy((s) => !s)}>
+                <Icon name={currentPrivacy.icon} size={12} />
+                <span>{currentPrivacy.label}</span>
+                <Icon name="chevron" size={12} />
+              </button>
+              {showPrivacy && (
+                <div className="scm-privacy-dropdown">
+                  {PRIVACY.map((p) => (
+                    <div
+                      key={p.value}
+                      className={`scm-privacy-option${privacy === p.value ? ' active' : ''}`}
+                      onClick={() => { setPrivacy(p.value); setShowPrivacy(false); }}
+                    >
+                      <Icon name={p.icon} size={16} />
+                      <span>{p.label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Preview area */}
+          <div className={`scm-preview${preview ? '' : ' empty'}`}>
+            {preview ? (
+              <>
+                {isVideo
+                  ? <video src={preview} muted autoPlay loop playsInline />
+                  : <img src={preview} alt="Story preview" />
+                }
+                <button className="scm-change-btn" onClick={() => fileInputRef.current?.click()} aria-label="Change media">
+                  <Icon name="camera" size={18} />
+                </button>
+              </>
+            ) : (
+              <button className="scm-upload-btn" onClick={() => fileInputRef.current?.click()}>
+                <div className="scm-upload-icon">
+                  <Icon name="camera" size={36} />
+                </div>
+                <span className="scm-upload-text">Add photo or video</span>
+                <span className="scm-upload-hint">or drag and drop</span>
+              </button>
+            )}
+            <input ref={fileInputRef} type="file" accept="image/*,video/*" hidden onChange={pickFile} />
+          </div>
+
+          {/* Caption */}
+          <div className="scm-caption-area">
+            <textarea
+              ref={textareaRef}
+              className="scm-caption-input"
+              placeholder={`What's on your mind, ${user.fullName?.split(' ')[0]}?`}
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              rows={2}
+              maxLength={1000}
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="scm-footer">
+          <div className="scm-footer-left">
+            <button className="scm-action-btn" onClick={() => fileInputRef.current?.click()}>
+              <Icon name="image" size={20} />
+              <span>Photo</span>
+            </button>
+            <button className="scm-action-btn" onClick={() => fileInputRef.current?.click()}>
+              <Icon name="video" size={20} />
+              <span>Video</span>
+            </button>
+          </div>
+          <button className="scm-share-btn" onClick={submit} disabled={submitting || !file}>
+            {submitting ? (
+              <span className="spinner spinner-sm" />
+            ) : (
+              <>Share to Story</>
+            )}
+          </button>
         </div>
       </div>
-
-      <div className={`story-create-preview${preview ? '' : ' empty'}`}>
-        {preview ? (
-          isVideo
-            ? <video src={preview} muted controls playsInline />
-            : <img src={preview} alt="Story preview" />
-        ) : (
-          <button type="button" className="story-create-empty" onClick={() => fileInputRef.current?.click()}>
-            <Icon name="camera" size={40} />
-            <span className="text-bold">Add photo or video</span>
-          </button>
-        )}
-        {preview && (
-          <button type="button" className="story-create-change" onClick={() => fileInputRef.current?.click()} aria-label="Choose another photo or video">
-            <Icon name="camera" size={18} />
-          </button>
-        )}
-        <input ref={fileInputRef} type="file" accept="image/*,video/*" hidden onChange={pickFile} aria-label="Upload story media" />
-      </div>
-
-      <textarea
-        className="composer-textarea"
-        placeholder="Say something about your story..."
-        value={caption}
-        onChange={(e) => setCaption(e.target.value)}
-        rows={2}
-        maxLength={1000}
-      />
-    </Modal>
+    </div>
   );
 });

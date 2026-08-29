@@ -188,3 +188,23 @@ export const adminService = {
   reports: (params) => api.get('/admin/reports', { params }).then((r) => r.data),
   resolveReport: (id) => api.patch(`/admin/reports/${id}/resolve`).then((r) => r.data),
 };
+
+export const liveService = {
+  create: (data) => api.post('/lives', data).then((r) => r.data),
+  start: (id) => api.post(`/lives/${id}/start`).then((r) => r.data),
+  end: (id) => api.post(`/lives/${id}/end`).then((r) => r.data),
+  get: (id) => api.get(`/lives/${id}`).then((r) => r.data),
+  getByRoom: (roomCode) => api.get(`/lives/room/${roomCode}`).then((r) => r.data),
+  list: (params) => api.get('/lives', { params }).then((r) => r.data),
+  join: (id) => api.post(`/lives/${id}/join`).then((r) => r.data),
+  leave: (id) => api.post(`/lives/${id}/leave`).then((r) => r.data),
+  comment: (id, content) => api.post(`/lives/${id}/comments`, { content }).then((r) => r.data),
+  getComments: (id, after) => api.get(`/lives/${id}/comments`, { params: { after } }).then((r) => r.data),
+  deleteComment: (id, commentId) => api.delete(`/lives/${id}/comments/${commentId}`).then((r) => r.data),
+  hideComment: (id, commentId) => api.post(`/lives/${id}/comments/${commentId}/hide`).then((r) => r.data),
+  ban: (id, userId) => api.post(`/lives/${id}/ban`, { userId }).then((r) => r.data),
+  unban: (id, userId) => api.post(`/lives/${id}/unban`, { userId }).then((r) => r.data),
+  report: (id, reason) => api.post(`/lives/${id}/report`, { reason }).then((r) => r.data),
+  viewers: (id) => api.get(`/lives/${id}/viewers`).then((r) => r.data),
+  myActive: () => api.get('/lives/active').then((r) => r.data),
+};
