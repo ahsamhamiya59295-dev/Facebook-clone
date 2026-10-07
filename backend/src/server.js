@@ -17,8 +17,8 @@ const io = new Server(httpServer, {
 
 registerSocket(io);
 
-// Expired stories and their media files are swept on startup and hourly.
-scheduleMediaCleanup();
+// Database is not configured on the hosted backend yet.
+// scheduleMediaCleanup();
 
 httpServer.listen(env.port, env.host, () => {
   // eslint-disable-next-line no-console
